@@ -4,7 +4,14 @@ Add these files to the packages directory of your meteor install in a directory 
 
     meteor add angularjs
     
+The angularjs app is always called meteorapp.
 
+    angular.module('meteorapp', []).
+        config(['$routeProvider', function($routeProvider) {
+        $routeProvider.
+             when('/index', {templateUrl: 'partials/index.html',   controller: MeteorCtrl}).
+             otherwise({redirectTo: '/'});
+    }]);
 ###Directory structure
 
      /public
