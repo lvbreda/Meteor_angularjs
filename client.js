@@ -1,4 +1,6 @@
-
+/*
+* Lander Van Breda
+*/
 
 
 function clone(obj) {
