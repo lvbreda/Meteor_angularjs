@@ -2,8 +2,10 @@
 * Lander Van Breda
 * 
 */
-
-
+Meteor.watched = false;
+/**
+ * Util
+ */
 function clone(obj) {
     if (null == obj || "object" != typeof obj) return obj;
     var copy = obj.constructor();
@@ -12,45 +14,14 @@ function clone(obj) {
     }
     return copy;
 }
-
-        //! READ THIS:
-//! Due to this post's publicity and the number of people asking if this is satire, or saying
-//! that this is an awful idea, I feel the need to clarify. This was **never** intended to
-//! actually be used, nor was it satirical. It was intended as a proof of concept to show what
-//! Javascript is capable of.
-var wrap = {};
-var uid;
-(function() {
-  var lastId = 0;
-  uid = function() {
-    return lastId++;
-  };
-}());
-
-wrap.$ = function(val) {
-  var id = uid();
-  wrap.$[id] = val;
-  Object.defineProperty(wrap.$, id, {
-    get: function() {
-      return val;
-    },
-    set: function(newVal) {
-      val = newVal;
-      return newVal;
-    },
-    enumerable: false
-  })
-  return this;
-};
-
-wrap.$.free = function(ptr) {
-  delete global.$[ptr];
-};      
-//Select multiple
-Meteor.AngularCollection = function(name,$scope){
+/*
+ * Controller for the angular collections.
+ */
+Meteor.AngularCollection = function(name,$scope,autosave){
 	self = this;
 	self.name = name;
 	self.$scope = $scope;
+	self.autosave = autosave
 	try{
 		self._collection = new Meteor.Collection(name);
 	}catch(e){
@@ -59,34 +30,43 @@ Meteor.AngularCollection = function(name,$scope){
 	return self;
 }
 Meteor.AngularCollection.prototype.find = function(selector, options){
-    return new AngularCollection(self._collection,selector,options,self.$scope);
+    return new AngularCollection(self._collection,selector,options,self.$scope,self.autosave);
 }
 Meteor.AngularCollection.prototype.findOne = function(selector, options){
-    return new AngularObject(self._collection,selector,options,self.$scope,1);
+    return new AngularObject(self._collection,selector,options,self.$scope,self.autosave);
 }
 Meteor.AngularCollection.prototype.insert = function(selector){
     self._collection.insert(selector);
 }
 Meteor.AngularCollection.prototype.remove = function(selector){
-    self._collection.insert(selector);
+    self._collection.remove(selector);
 }
 Meteor.AngularCollection.prototype.update = function(selector,options){
 	for(i in this.find({})){
 		self._collection.update(selector,options);
-	}
-    
+	}  
 }
-var AngularCollection = function(Collection,selector,subSelector,$scope,type) {	
+
+
+
+
+var AngularCollection = function(Collection,selector,subSelector,$scope,autosave) {	
 	var self = this;
 	self.value = [];
+	self.value.$save = self.$save;
+	self.value.$remove = self.$remove;
+	self.value.$add = self.$add;
+	self.value.parent = self;
 	self.length = self.value.length;
 	self.$scope = $scope;
 	self.query = Collection.find(selector,subSelector);
 	self.Collection = Collection;
+	self.selector = selector,
+	self.subSelector = subSelector;
 	self.handle = self.query.observe({
 				added : function(object) {
 					try{
-						self.value.push(object);
+						self.value.push(new AngularObject(self.Collection,self.selector,self.subSelector,self.$scope,object,autosave));
 						self.$scope.$digest();
 					}catch(e){
 						
@@ -104,8 +84,10 @@ var AngularCollection = function(Collection,selector,subSelector,$scope,type) {
 				changed : function(new_document, at_index, old_document) {
 					try{
 						for (i in self.value[at_index]) {
-							if (self.value[at_index][i] !== new_document[i]) {
-								self.value[at_index][i] = new_document[i];
+							if("function" != typeof self.value[at_index][i] && "object" != typeof self.value[at_index][i]){
+								if (self.value[at_index][i] !== new_document[i]) {
+									self.value[at_index][i] = new_document[i];
+								}
 							}
 						}
 						self.$scope.$digest();
@@ -114,22 +96,31 @@ var AngularCollection = function(Collection,selector,subSelector,$scope,type) {
 					}
 				}
 			});
-	if(type == 1){
-		return self.value;
-	}else{
-		return self.value;
+    if(autosave){ 
+		$scope.$watch(function($scope){
+			 //$scope.players;
+			 for(i in $scope){
+			 	var name = i;
+			 	if(name.indexOf("$")<0){
+			 		if($scope[i].$save){
+			 			$scope[i].$save();
+			 		}
+			 		
+			 	}
+			 }
+		},function(newValue, oldValue) {  },undefined,false);
+
 	}
+	return self.value;
+	
 	
 };
 AngularCollection.prototype.value = function(){
 	return self.value;
 }
-AngularCollection.prototype.add = function(item) {
-	var self = this;
-	index = self.value.length;
-	self.value[index] = item;
-	self.length = self.value.length;
-	return index;
+AngularCollection.prototype.$add = function(item) {
+	var self = this.parent;
+	self.Collection.insert(item);
 };
 AngularCollection.prototype.get = function(index) {
 	var self = this;
@@ -146,51 +137,97 @@ AngularCollection.prototype.forEach = function(fn) {
 	}
 };
 AngularCollection.prototype.$save = function(){
-	var self = this;
-	for(i in self.arr){
-		current = clone(self.arr[i]);
-		delete current._id;
-		self.Collection.update({_id:self.arr[i]._id},{$set:current});
+	try{
+		var self = this.parent;
+		for(i in self.value){
+			i.$save;
+		}
+	}catch(e){
+		
 	}
+	
 }
 AngularCollection.prototype.$delete = function(id){
-	var self = this;
+	var self = this.parent;
 	self.Collection.remove({_id:id});
 }
 // Select single
-var AngularObject = function(Collection,selector,subSelector,$scope) {
+var AngularObject = function(Collection,selector,subSelector,$scope,values,autosave) {
 	var self = this;
 	self.value = new Array();
+	self.value.$save = self.$save;
+	self.value.$delete = self.$delete;
+	self.value._parent = self;
 	self.$scope = $scope;
 	self.query = {};
-	self.Collection = Collection
-	Meteor.autosubscribe(function(){
-			try{
-					temp = self.Collection.findOne(selector,subSelector);
-					for(i in temp){
-						self.value[i] = undefined;
-						self.value[i]  = temp[i];
-					}
-					self.value = self.value?self.value:new Array();
-					console.log(self.value);
-					self.$scope.$digest();
-			}catch(e){
+	self.Collection = Collection;
+	self.subSelector = subSelector;
+	if(typeof values != "object"){
+		Meteor.autosubscribe(function(){
+				try{
+						temp = self.Collection.findOne(selector,subSelector);
+						for(i in temp){
+							self.value[i] = undefined;
+							self.value[i]  = temp[i];
+						}
+						self.value = self.value?self.value:new Array();
 					
-			}
-   });
-  
+						self.$scope.$digest();
+				}catch(e){
+						
+				}
+	   });
+	   
+	 if(autosave){  
+		 $scope.$watch(function($scope){
+			for(i in $scope){
+				 	var name = i;
+				 	try{
+					 	if(name.indexOf("$")<0){
+					 		if($scope[i].$save)	{
+					 			$scope[i].$save();
+					 		}
+					 	}
+				 	}catch(e){
+				 		
+				 	}
+				 }
+			},function(newValue, oldValue) { },undefined,false);
+		
+	}
+  }else{
+  		for(i in values){
+			self.value[i] = undefined;
+			self.value[i]  = values[i];
+		}
+  }
+ 
    return self.value;
 };
 AngularObject.prototype.$save = function(){
-	var self = this;
-	current = clone(self.value);
-	delete current._id;
-	console.log(current );
-	console.log(self.value._id);
-	self.Collection.update({_id:self.value._id},{$set:current});
+			var self = this._parent;
+	
+			if(self.value){
+				current = {};
+				for(i in self.value){
+					if("function" != typeof self.value[i] && "object" != typeof self.value[i]){
+						current[i] = self.value[i];
+					}
+					
+				}
+					var temp = self.Collection.findOne({_id:self.value._id},self.subSelector);
+					
+					if(!_.isEqual(temp,current)){
+						delete current._id;
+						self.Collection.update({_id:self.value["_id"]},{$set : current});
+					}
+					
+				
+			}
+		
 }
 AngularObject.prototype.$delete = function(){
-	var self = this;
+	var self = this._parent;
 	self.Collection.remove({_id:self.value._id});
 }
 

@@ -3,6 +3,6 @@
   "description": "Smartpackage for the use of angular on top of meteor",
   "homepage": "https://github.com/lvbreda/Meteor_angularjs",
   "author": "Lander Van Breda",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "git": "https://github.com/lvbreda/Meteor_angularjs.git"
 }
