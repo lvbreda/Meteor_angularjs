@@ -29,11 +29,12 @@ The angularjs app is always called meteorapp.
     //Collection
     //controler.js
     function MeteorCtrl($scope,$rootScope) {
-        $scope.Players = new Meteor.AngularCollection('players',$scope);
+        $scope.Players = new Meteor.AngularCollection('players',$scope,autosave); //autosave is a boolean true to enable autosave (slow startup)
         $scope.players = $scope.Players.find({});
     }
     //partial.html
     <p ng-repeat="player in players">
+        <a ng-click="player.$delete()">Delete</a>
         {{player.name}}
     </p>
 
@@ -45,6 +46,7 @@ The angularjs app is always called meteorapp.
     }
     //partial.html
     <input type="text" value="{{selectedplayer.name}}" ng-model="selectedplayer.name" />
+    <button ng-click="selectedplayer.$save()">Save</button>
 
 ####Actions
 
