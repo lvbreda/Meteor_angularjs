@@ -24,20 +24,22 @@ The angularjs app is always called meteorapp.
     //Collection
     //controler.js
     function MeteorCtrl($scope,$rootScope) {
-        $scope.players = new AngularCollection(Players,{},$scope);
+        $scope.Players = new Meteor.AngularCollection('players',$scope);
+        $scope.players = $scope.Players.find({});
     }
     //partial.html
-    <p ng-repeat="player in players.value">
+    <p ng-repeat="player in players">
         {{player.name}}
     </p>
 
     //Single
     //controller.js
     function MeteorCtrl($scope,$rootScope) {
-        $scope.selectedplayer = new AngularObject(Players,{_id:"9fce5f26-d40f-43ff-8ca0-bcecb1d4c2d2"},$scope);
+        $scope.Players = new Meteor.AngularCollection('players',$scope);
+        $scope.selectedplayer = $scope.Players.findOne({});
     }
     //partial.html
-    <input type="text" value="{{selectedplayer.value.name}}" ng-model="selectedplayer.value.name" />
+    <input type="text" value="{{selectedplayer.name}}" ng-model="selectedplayer.name" />
 
 ####Actions
 
