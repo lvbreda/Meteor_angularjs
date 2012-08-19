@@ -1,6 +1,5 @@
 #Angularjs in Meteor
 ##How to use it
-#Saving/removing contain an error at the moment. Please bare with me, it will be fixed tomorrow.
 Add these files to the packages directory of your meteor install in a directory called angularjs. Then in your project do:
 
     meteor add angularjs
