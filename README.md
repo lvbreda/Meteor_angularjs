@@ -4,6 +4,10 @@ Add these files to the packages directory of your meteor install in a directory 
 
     meteor add angularjs
     
+Or use meteorite
+
+    https://atmosphere.meteor.com/
+    
 The angularjs app is always called meteorapp.
 
     angular.module('meteorapp', []).
