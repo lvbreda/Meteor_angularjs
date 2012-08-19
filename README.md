@@ -1,8 +1,13 @@
 #Angularjs in Meteor
 ##How to use it
+#Saving/removing contain an error at the moment. Please bare with me, it will be fixed tomorrow.
 Add these files to the packages directory of your meteor install in a directory called angularjs. Then in your project do:
 
     meteor add angularjs
+    
+Or use meteorite
+
+    https://atmosphere.meteor.com/
     
 The angularjs app is always called meteorapp.
 
@@ -24,20 +29,22 @@ The angularjs app is always called meteorapp.
     //Collection
     //controler.js
     function MeteorCtrl($scope,$rootScope) {
-        $scope.players = new AngularCollection(Players,{},$scope);
+        $scope.Players = new Meteor.AngularCollection('players',$scope);
+        $scope.players = $scope.Players.find({});
     }
     //partial.html
-    <p ng-repeat="player in players.value">
+    <p ng-repeat="player in players">
         {{player.name}}
     </p>
 
     //Single
     //controller.js
     function MeteorCtrl($scope,$rootScope) {
-        $scope.selectedplayer = new AngularObject(Players,{_id:"9fce5f26-d40f-43ff-8ca0-bcecb1d4c2d2"},$scope);
+        $scope.Players = new Meteor.AngularCollection('players',$scope);
+        $scope.selectedplayer = $scope.Players.findOne({});
     }
     //partial.html
-    <input type="text" value="{{selectedplayer.value.name}}" ng-model="selectedplayer.value.name" />
+    <input type="text" value="{{selectedplayer.name}}" ng-model="selectedplayer.name" />
 
 ####Actions
 
