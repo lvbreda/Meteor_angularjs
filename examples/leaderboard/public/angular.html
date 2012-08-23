@@ -1,0 +1,9 @@
+<div id="outer" ng-controller="TournamentCtrl">
+     <div class="leaderboard">
+        <div class="player"  ng-repeat="play in players | orderBy : 'play.score'" ng-class="sel($index)" ng-click="toggleSelect($index)">
+        	<span class="name">{{play.name}}</span>
+    		<span class="score">{{play.score}}</span>
+    		<span class="love" ng-click="play.score = play.score +5"><img src="img/fav.png" alt="Like"/></span>
+        </div>
+     </div>
+</div>

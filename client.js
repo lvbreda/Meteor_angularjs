@@ -52,7 +52,7 @@ Meteor.AngularCollection.prototype.update = function(selector,options){
 
 var AngularCollection = function(Collection,selector,subSelector,$scope,autosave) {	
 	var self = this;
-	self.value = [];
+	self.value = new Array();
 	self.value.$save = self.$save;
 	self.value.$delete = self.$delete;
 	self.value.$add = self.$add;
@@ -99,6 +99,7 @@ var AngularCollection = function(Collection,selector,subSelector,$scope,autosave
     if(autosave){ 
 		$scope.$watch(function($scope){
 			 //$scope.players;
+			
 			 for(i in $scope){
 			 	var name = i;
 			 	if(name.indexOf("$")<0){
@@ -139,8 +140,10 @@ AngularCollection.prototype.forEach = function(fn) {
 AngularCollection.prototype.$save = function(){
 	try{
 		var self = this.parent;
+		
 		for(i in self.value){
-			i.$save;
+			self.value[i]._parent.$save();
+			//console.log(self.value[i]);
 		}
 	}catch(e){
 		
@@ -153,7 +156,7 @@ AngularCollection.prototype.$delete = function(id){
 }
 // Select single
 var AngularObject = function(Collection,selector,subSelector,$scope,values,autosave) {
-	var self = this;
+	self = this;
 	self.value = new Array();
 	self.value.$save = self.$save;
 	self.value.$delete = self.$delete;
@@ -205,8 +208,13 @@ var AngularObject = function(Collection,selector,subSelector,$scope,values,autos
    return self.value;
 };
 AngularObject.prototype.$save = function(){
-			var self = this._parent;
-	
+			if(this._id){
+				var self = this._parent;
+			}else{
+				var self = this;
+			}
+		
+			
 			if(self.value){
 				current = {};
 				for(i in self.value){
