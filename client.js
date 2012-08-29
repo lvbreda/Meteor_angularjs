@@ -21,16 +21,17 @@ Meteor.AngularCollection = function(name,$scope,autosave){
 	self = this;
 	self.name = name;
 	self.$scope = $scope;
-	self.autosave = autosave
+	self.autosave = autosave;
 	try{
 		self._collection = new Meteor.Collection(name);
 	}catch(e){
 		self._collection = Meteor._LocalCollectionDriver.collections[name];
 	}
+
 	return self;
 }
-Meteor.AngularCollection.prototype.find = function(selector, options){
-    return new AngularCollection(self._collection,selector,options,self.$scope,self.autosave);
+Meteor.AngularCollection.prototype.find = function(selector, options,callback){
+    return new AngularCollection(self._collection,selector,options,self.$scope,self.autosave,callback);
 }
 Meteor.AngularCollection.prototype.findOne = function(selector, options){
     return new AngularObject(self._collection,selector,options,self.$scope,self.autosave);
@@ -50,29 +51,49 @@ Meteor.AngularCollection.prototype.update = function(selector,options){
 
 
 
-var AngularCollection = function(Collection,selector,subSelector,$scope,autosave) {	
+var AngularCollection = function(Collection,selector,subSelector,$scope,autosave,callback) {	
 	var self = this;
 	self.value = new Array();
 	self.value.$save = self.$save;
 	self.value.$delete = self.$delete;
 	self.value.$add = self.$add;
 	self.value.parent = self;
+	self.callback = _.once(callback);
 	self.length = self.value.length;
 	self.$scope = $scope;
 	self.query = Collection.find(selector,subSelector);
 	self.Collection = Collection;
-	self.selector = selector,
+	self.selector = selector;
 	self.subSelector = subSelector;
+	
+	for(i in self.query.collection.docs){
+		try{
+			self.value.push(new AngularObject(self.Collection,self.selector,self.subSelector,self.$scope,self.query.collection.docs[i],autosave));
+			self.callback();
+		}catch(e){
+
+		}
+	}
 	self.handle = self.query.observe({
 				added : function(object) {
+					
 					try{
-						self.value.push(new AngularObject(self.Collection,self.selector,self.subSelector,self.$scope,object,autosave));
-						self.$scope.$digest();
+						//_.sortBy(self.value, function(val){return val.value._id});
+						//console.log(self.value);
+						if(_.indexOf(self.value, object._id, true)==-1 ){
+							self.value.push(new AngularObject(self.Collection,self.selector,self.subSelector,self.$scope,object,autosave));
+							self.callback();
+							self.$scope.$digest();
+						}
+						
+
+						
 					}catch(e){
 						
 					}
 				},
 				removed : function(old, index) {
+					
 					try{
 						self.value.splice(index, 1);
 						self.$scope.$digest();
@@ -82,6 +103,7 @@ var AngularCollection = function(Collection,selector,subSelector,$scope,autosave
 						
 				},
 				changed : function(new_document, at_index, old_document) {
+					
 					try{
 						for (i in self.value[at_index]) {
 							if("function" != typeof self.value[at_index][i] && "object" != typeof self.value[at_index][i]){
@@ -96,14 +118,14 @@ var AngularCollection = function(Collection,selector,subSelector,$scope,autosave
 					}
 				}
 			});
+	
     if(autosave){ 
 		$scope.$watch(function($scope){
-			 //$scope.players;
 			
 			 for(i in $scope){
 			 	var name = i;
 			 	if(name.indexOf("$")<0){
-			 		if($scope[i].$save){
+			 		if($scope[i] && $scope[i].$save){
 			 			$scope[i].$save();
 			 		}
 			 		
@@ -142,10 +164,14 @@ AngularCollection.prototype.$save = function(){
 		var self = this.parent;
 		
 		for(i in self.value){
-			self.value[i]._parent.$save();
-			//console.log(self.value[i]);
+
+			if(self.value[i] && self.value[i].$save){
+				self.value[i]._parent.$save();
+			}
+			
 		}
 	}catch(e){
+		
 		
 	}
 	
@@ -156,6 +182,7 @@ AngularCollection.prototype.$delete = function(id){
 }
 // Select single
 var AngularObject = function(Collection,selector,subSelector,$scope,values,autosave) {
+	
 	self = this;
 	self.value = new Array();
 	self.value.$save = self.$save;
@@ -187,7 +214,7 @@ var AngularObject = function(Collection,selector,subSelector,$scope,values,autos
 				 	var name = i;
 				 	try{
 					 	if(name.indexOf("$")<0){
-					 		if($scope[i].$save)	{
+					 		if($scope[i] && $scope[i].$save)	{
 					 			$scope[i].$save();
 					 		}
 					 	}
