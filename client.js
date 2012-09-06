@@ -27,7 +27,7 @@ Meteor.AngularCollection = function(name,$scope,autosave){
 	}catch(e){
 		self._collection = Meteor._LocalCollectionDriver.collections[name];
 	}
-
+	//console.log(self);
 	return self;
 }
 Meteor.AngularCollection.prototype.find = function(selector, options,callback){
@@ -70,6 +70,7 @@ var AngularCollection = function(Collection,selector,subSelector,$scope,autosave
 		try{
 			self.value.push(new AngularObject(self.Collection,self.selector,self.subSelector,self.$scope,self.query.collection.docs[i],autosave));
 			self.callback();
+			self.$scope.$digest();
 		}catch(e){
 
 		}
@@ -80,10 +81,15 @@ var AngularCollection = function(Collection,selector,subSelector,$scope,autosave
 					try{
 						//_.sortBy(self.value, function(val){return val.value._id});
 						//console.log(self.value);
+						
 						if(_.indexOf(self.value, object._id, true)==-1 ){
 							self.value.push(new AngularObject(self.Collection,self.selector,self.subSelector,self.$scope,object,autosave));
 							self.callback();
-							self.$scope.$digest();
+							try{
+								self.$scope.$digest();
+							}catch(e){
+								
+							}
 						}
 						
 
@@ -96,7 +102,11 @@ var AngularCollection = function(Collection,selector,subSelector,$scope,autosave
 					
 					try{
 						self.value.splice(index, 1);
-						self.$scope.$digest();
+						try{
+							self.$scope.$digest();
+						}catch(e){
+							
+						}
 					}catch(e){
 						
 					}
@@ -112,7 +122,12 @@ var AngularCollection = function(Collection,selector,subSelector,$scope,autosave
 								}
 							}
 						}
-						self.$scope.$digest();
+						try{
+							self.$scope.$digest();
+						}catch(e){
+							
+						}
+						
 					}catch(e){
 						
 					}
@@ -121,7 +136,6 @@ var AngularCollection = function(Collection,selector,subSelector,$scope,autosave
 	
     if(autosave){ 
 		$scope.$watch(function($scope){
-			
 			 for(i in $scope){
 			 	var name = i;
 			 	if(name.indexOf("$")<0){
@@ -245,21 +259,36 @@ AngularObject.prototype.$save = function(){
 			if(self.value){
 				current = {};
 				for(i in self.value){
-					if("function" != typeof self.value[i] && "object" != typeof self.value[i]){
+					if("function" != typeof self.value[i] && i.indexOf('_') == -1 && i.indexOf('$') == -1){
 						current[i] = self.value[i];
 					}
 					
 				}
+				
 					var temp = self.Collection.findOne({_id:self.value._id},self.subSelector);
 					
 					if(!_.isEqual(temp,current)){
+						//console.log(temp);
+						
 						delete current._id;
+						clearing(current);
+						
+						
 						self.Collection.update({_id:self.value["_id"]},{$set : current});
 					}
 					
 				
 			}
 		
+}
+function clearing(object){
+	for(i in object){
+		if(i.indexOf("$")>-1){
+			delete object[i];
+		}else if(typeof object[i] == "object"){
+			clearing(object[i]);
+		}
+	}
 }
 AngularObject.prototype.$delete = function(){
 	var self = this._parent;
