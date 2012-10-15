@@ -23,38 +23,4 @@ The angularjs app is always called meteorapp.
          angular.html(Main screen should contain body content)
 
 ###Usage
-####Selecting
-
-    //Collection
-    //controler.js
-    function MeteorCtrl($scope,$rootScope) {
-        $scope.Players = new Meteor.AngularCollection('players',$scope,autosave); //autosave is a boolean true to enable autosave (slow startup)
-        $scope.players = $scope.Players.find({});
-    }
-    //partial.html
-    <p ng-repeat="player in players">
-        <a ng-click="player.$delete()">Delete</a>
-        {{player.name}}
-    </p>
-
-    //Single
-    //controller.js
-    function MeteorCtrl($scope,$rootScope) {
-        $scope.Players = new Meteor.AngularCollection('players',$scope);
-        $scope.selectedplayer = $scope.Players.findOne({});
-    }
-    //partial.html
-    <input type="text" value="{{selectedplayer.name}}" ng-model="selectedplayer.name" />
-    <button ng-click="selectedplayer.$save()">Save</button>
-
-####Actions
-
-    //Save: pushes model changes to the database
-    $scope.selectedplayer.$save();
-    $scope.players.$save();
-
-    //Remove
-    $scope.selectedplayer.$delete();
-    $scope.players.$delete(id);
-
-
+Will be updated for the new release
