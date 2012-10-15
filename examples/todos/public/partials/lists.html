@@ -1,0 +1,58 @@
+<div id="top-tag-filter">
+	<div id="tag-filter" class="tag-list">
+		<div class="label">
+			Show:
+		</div>
+		<div ng-repeat="(tag,value) in currentTags()" class="tag" ng-class="{selected : isFilterTag(tag)}" ng-click="addFilterTag(tag)">
+			{{tag}} <span class="count">({{value}})</span>
+		</div>
+	</div>
+</div>
+<div id="main-pane">
+	<div id="items-view" ng-show="selectedList">
+		<div id="new-todo-box">
+			<input type="text" id="new-todo" placeholder="New item"  ng-model="newTodo.text" ng-enter="Todos.insert(newTodo)" />
+		</div>
+		<ul id="item-list">
+			<li ng-repeat="todo in todos | filter:filterByTag" class="todo " ng-class="{done : todo.done}" >
+				<div class="destroy" ng-click="todo.$delete();"></div>
+				<div class="display">
+					<input class="check" name="markdone" type="checkbox" ng-model="todo.done" ng-checked="todo.done" ng-change="todo.$save();"  />
+					<div class="todo-text">
+						<span ng-hide="editMode" ng-click="editMode=true">{{todo.text}}</span>
+						<input type="text" ng-model="todo.text" ng-show="editMode" ng-model-instant ng-enter="editMode=false;todo.$save();" />
+					</div>
+				</div>
+				<div class="item-tags">
+					<div class="tag removable_tag" ng-repeat='tag in todo.tags'>
+						<div class="name">
+							{{tag}}
+						</div>
+						<div class="remove" ng-click="removeTag(todo,tag)"></div>
+					</div>
+					<div class="tag addtag">
+						
+						<span ng-hide="editMode" ng-click="editMode=true">+tag</span>
+						<input type="text" ng-model="newtag" ng-show="editMode" ng-model-instant ng-enter="todo.tags.push(newtag);editMode=false;todo.$save()" />
+					</div>
+					
+				</div>
+			</li>
+		</ul>
+	</div>
+
+</div>
+
+<div id="side-pane">
+	<h3>Todo Lists</h3>
+	<div id="lists">
+		<div class="list" ng-repeat="list in lists " ng-class="{selected : list._id==selectedList}" >
+			
+			<span ng-hide="editMode" ng-click="changeList(list._id)" ng-dblclick="stop();editMode=true">{{list.name}}</span>
+			<input type="text" ng-model="list.name" ng-show="editMode" ng-model-instant ng-enter="editMode=false;list.$save();" />
+		</div>
+	</div>
+	<div id="createList">
+		<input type="text" id="new-list" ng-model="newlist.name" placeholder="New list" ng-enter="Lists.insert(newlist);" />
+	</div>
+</div>
