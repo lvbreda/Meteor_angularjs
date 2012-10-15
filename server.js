@@ -15,7 +15,7 @@ __meteor_bootstrap__.app
         try{ 
       		angular = fs.readFileSync(path.resolve('bundle/static/angular.html'));
         }catch(e){
-          if(path.existsSync("public/angular.html")){
+          if(fs.existsSync("public/angular.html")){
             angular = fs.readFileSync(path.resolve('public/angular.html'));
           }else{
             console.log("Angularjs\n______\nCreate public/angular.html\n This is used as your main page, this should contain the contents of the body.");
