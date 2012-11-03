@@ -49,6 +49,9 @@ Meteor.AngularCollection = function(name, $scope) {
 	if (!Meteor._LocalCollectionDriver.collections[self.name]) {
 		self.collection = new Meteor.Collection(self.name);
 		Meteor.AngularCollectionHolder[self.name] = self.collection;
+	}else{
+		self.collection = Meteor._LocalCollectionDriver.collections[self.name];
+		Meteor.AngularCollectionHolder[self.name] = self.collection;
 	}
 	self.find = function(selector) {
 		query = self.collection.find(selector);
