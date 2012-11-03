@@ -89,14 +89,16 @@ var angularObjectCollection = function($scope, name, query, selector, single) {
 	self.$scope = $scope;
 	self.selector = selector;
 	self.value.push(new angularObject(self.name, {}, self.$scope));
+	self.first = true;
 	for (var i in self.query.collection.docs) {
 		try {
 			if (self.query.selector_f(self.query.collection.docs[i])) {
 
-				if (self.value.length == 1) {
+				if (self.first && self.value.length == 1) {
 					for (o in query.collection.docs[i]) {
 						self.value[0][o] = query.collection.docs[i][o];
 					}
+					self.first = false;
 				} else {
 					var temp = new angularObject(self.name, query.collection.docs[i], $scope);
 					self.value.push(temp);
@@ -117,12 +119,13 @@ var angularObjectCollection = function($scope, name, query, selector, single) {
 					return;
 				}
 			}
-			if (self.value.length == 1) {
+			if (self.first && self.value.length == 1) {
 				
 				for (o in object) {
 					self.value[0][o] = object[o];
 				}
-				console.log(self.value[0]);
+				self.first = false;
+				
 			} else {
 				var temp = new angularObject(self.name, object, self.$scope);
 				if (_.indexOf(self.value, temp, true) == -1) {
