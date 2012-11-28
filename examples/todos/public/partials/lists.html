@@ -3,7 +3,7 @@
 		<div class="label">
 			Show:
 		</div>
-		<div ng-repeat="(tag,value) in currentTags()" class="tag" ng-class="{selected : isFilterTag(tag)}" ng-click="addFilterTag(tag)">
+		<div ng-repeat="(tag,value) in computedCurrentTags" class="tag" ng-class="{selected : isFilterTag(tag)}" ng-click="addFilterTag(tag)">
 			{{tag}} <span class="count">({{value}})</span>
 		</div>
 	</div>
@@ -14,7 +14,7 @@
 			<input type="text" id="new-todo" placeholder="New item"  ng-model="newTodo.text" ng-enter="Todos.insert(newTodo)" />
 		</div>
 		<ul id="item-list">
-			<li ng-repeat="todo in todos | filter:filterByTag" class="todo " ng-class="{done : todo.done}" >
+			<li ng-repeat="todo in todos" class="todo " ng-class="{done : todo.done}" >
 				<div class="destroy" ng-click="todo.$delete();"></div>
 				<div class="display">
 					<input class="check" name="markdone" type="checkbox" ng-model="todo.done" ng-checked="todo.done" ng-change="todo.$save();"  />
@@ -53,6 +53,6 @@
 		</div>
 	</div>
 	<div id="createList">
-		<input type="text" id="new-list" ng-model="newlist.name" placeholder="New list" ng-enter="Lists.insert(newlist);" />
+		<input type="text" id="new-list" ng-model="newlist.name" placeholder="New list" ng-enter="Lists.insert(newlist); newlist.name=''" />
 	</div>
 </div>
