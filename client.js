@@ -62,7 +62,7 @@ Meteor.AngularCollection = function(name, $scope) {
 		return new angularObjectCollection(self.$scope, self.name, query, selector, true);
 	}
 	self.insert = function(object) {
-		self.collection.insert(object);
+		return self.collection.insert(object);
 	}
 	self.emptyObject = function() {
 		return new angularObject(self.name, {}, $scope);
@@ -192,9 +192,10 @@ var angularObject = function(name, content, $scope, collection) {
 			if (!self._id) {
 				Meteor.AngularCollectionHolder[self.$collection].insert(temp);
 			} else {
+			
 				Meteor.AngularCollectionHolder[self.$collection].update({
 					_id : self._id
-				}, temp);
+				},{$set :  temp});
 			}
 
 		}

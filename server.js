@@ -26,6 +26,12 @@ __meteor_bootstrap__.app
       	code = new String(code);
       	code = code.replace("<body>",new String(angular));
 		code = code.replace("<html>",'<html ng-app="meteorapp">');
+		if (typeof __meteor_runtime_config__ !== 'undefined') {
+		  code = code.replace(
+		    "// ##RUNTIME_CONFIG##",
+		    "__meteor_runtime_config__ = " +
+		      JSON.stringify(__meteor_runtime_config__) + ";");
+		}
         res.writeHead(200, {'Content-Type': 'text/html'});	
          res.write(code);
          res.end();
