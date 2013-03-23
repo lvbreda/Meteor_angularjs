@@ -85,14 +85,14 @@ function($rootScope, MeteorCollections, $meteorObject) {
 			return value;
 		}
 		Collection.insert = function(values) {
+			values = angular.copy(values);
+            		cleanupAngularObject(values);
 			return collection.insert(values);
 		}
 		Collection.update = function(selector, updateValues) {
-			var temp = {};
-			angular.copy(updateValues, temp);
-			delete temp._id;
-			delete temp.save;
-			delete temp.remove;
+			updateValues = angular.copy(updateValues);
+            		cleanupAngularObject(updateValues);
+            		delete updateValues._id;
 			return collection.update(selector, {
 				$set : updateValues
 			});
@@ -105,3 +105,22 @@ function($rootScope, MeteorCollections, $meteorObject) {
 
 	return CollectionFactory;
 }]); 
+
+/** Removes AngularJS transient properties from Object tree */
+cleanupAngularObject = function(value) {
+    if (value instanceof Array) {
+        for (var i = 0; i < value.length; i++) {
+            cleanupAngularObject(value[i]);
+        }
+    }
+    else if (value instanceof Object) {
+        for (property in value) {
+            if (/^\$+/.test(property)) {
+                delete value[property];
+            }
+            else {
+                cleanupAngularObject(value[property]);
+            }
+        }
+    }
+}
