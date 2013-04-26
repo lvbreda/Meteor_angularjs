@@ -1,6 +1,7 @@
-var connect = __meteor_bootstrap__.require("connect");
-var fs = __meteor_bootstrap__.require("fs");
-var path = __meteor_bootstrap__.require("path");
+var connect = Npm.require("connect");
+var fs = Npm.require("fs");
+var path = Npm.require("path");
+var Fiber = Npm.require("fibers");
 
 __meteor_bootstrap__.app
     .use(connect.query())
