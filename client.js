@@ -17,6 +17,9 @@ function() {
 	function ObjectFactory(collection, objectvalue) {
 		if(!objectvalue){return;}
 		objectvalue.save = function() {
+			objectvalue = angular.copy(objectvalue);
+			cleanupAngularObject(objectvalue);
+
 			collection.update({
 				_id : this._id
 			}, objectvalue);
