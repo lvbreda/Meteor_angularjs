@@ -2,7 +2,7 @@
 ##How to use it
 The angularjs app is always called meteorapp.
 
-    angular.module('meteorapp', []).
+    angular.module('meteorapp', [meteor]).
         config(['$routeProvider', function($routeProvider) {
         $routeProvider.
              when('/index', {templateUrl: 'partials/index.html',   controller: MeteorCtrl}).
