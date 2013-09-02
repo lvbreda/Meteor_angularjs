@@ -3,7 +3,7 @@ var fs = Npm.require("fs");
 var path = Npm.require("path");
 var Fiber = Npm.require("fibers");
 
-__meteor_bootstrap__.app
+WebApp.connectHandlers
     .use(connect.query())
     .use(function (req, res, next) {
     	
