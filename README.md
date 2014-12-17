@@ -1,3 +1,5 @@
+#Not maintained anymore at this time please use : https://github.com/Urigo/angular-meteor
+
 #Angularjs in Meteor
 ##How to use it
 The angularjs app is always called meteorapp.
